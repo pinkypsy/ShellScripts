@@ -30,7 +30,7 @@ rclone copy -v "$SOURCE_PATH" "$DESTINATION_PATH" \
   --contimeout 60s --timeout 300s --retries 3 --low-level-retries 10 \
   --azureblob-memory-pool-flush-time 60s --azureblob-upload-concurrency 256 \
   --azureblob-chunk-size 32M --azureblob-memory-pool-use-mmap \
-  --error-on-no-tranfer
+  --error-on-no-transfer
 
 EXIT_CODE=$?
 echo "Exit code: $EXIT_CODE"
