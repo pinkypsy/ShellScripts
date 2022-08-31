@@ -19,10 +19,15 @@ if [ -z "$DESTINATION_PATH" ]; then
 fi
 echo ">Destination: $DESTINATION_PATH"
 
-read -r -p "Would you like to replace files in the destination if files with the same name are detected? [y/n] " RESPONSE
-case "$RESPONSE" in
-[Nn]) IS_IGNORE_EXISTING=--ignore-existing ;;
-esac
+rclone ls "$DESTINATION_PATH" --error-on-no-transfer
+if [ $? -ne 3 ]; then
+  read -r -p "Would you like to replace files in the destination if files with the same name are detected? [y/n] " RESPONSE
+  case "$RESPONSE" in
+  [Nn]) IS_IGNORE_EXISTING=--ignore-existing ;;
+  esac
+else
+  echo ">${DESTINATION_PATH}: directory with such name not found. Creating..."
+fi
 
 rclone copy -v "$SOURCE_PATH" "$DESTINATION_PATH" \
   $IS_IGNORE_EXISTING --transfers $COUNT --checkers $COUNT \
