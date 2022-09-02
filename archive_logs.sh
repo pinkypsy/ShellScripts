@@ -1,0 +1,1 @@
+rclone copy /var/log/rclone/ --include=*.gz  assetsstorage2908:/containerrrr --azureblob-access-tier archive --ignore-existing

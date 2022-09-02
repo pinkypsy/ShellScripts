@@ -33,7 +33,7 @@ rclone copy -v "$SOURCE_PATH" "$DESTINATION_PATH" \
   $IS_IGNORE_EXISTING --transfers $COUNT --checkers $COUNT \
   --azureblob-disable-checksum --stats 10s --stats-file-name-length 0 \
   --contimeout 60s --timeout 300s --retries 3 --low-level-retries 10 \
-  --azureblob-memory-pool-flush-time 60s --azureblob-upload-concurrency 256 \
+  --azureblob-memory-pool-flush-time 60s --azureblob-upload-concurrency 127 \
   --azureblob-chunk-size 32M --azureblob-memory-pool-use-mmap \
   --error-on-no-transfer
 
@@ -61,5 +61,3 @@ elif [ $EXIT_CODE -eq 8 ]; then
 elif [ $EXIT_CODE -eq 9 ]; then
   echo "Operation successful, but no files transferred"
 fi
-
-#for access logs  --azureblob-access-tier archive
