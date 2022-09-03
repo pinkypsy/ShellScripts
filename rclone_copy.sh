@@ -1,4 +1,8 @@
 #!/bin/bash
+
+LOG_PATH="/var/log/rclone/access.log"
+TEMP_LOG_FILE="temp_rclone.log"
+
 if [ -z "$SOURCE_PATH" ]; then
   read -r -p "Enter source path to the file or directory: " SOURCE_PATH
 fi
@@ -19,9 +23,9 @@ if [ -z "$DESTINATION_PATH" ]; then
 fi
 echo ">Destination: $DESTINATION_PATH"
 
-rclone ls "$DESTINATION_PATH" --error-on-no-transfer
+rclone lsl "$DESTINATION_PATH" --error-on-no-transfer
 if [ $? -ne 3 ]; then
-  read -r -p "Would you like to replace files in the destination if files with the same name are detected? [y/n] " RESPONSE
+  read -r -p "Would you like to replace files in the destination if files with the same name (but different content) are detected? [y/n] " RESPONSE
   case "$RESPONSE" in
   [Nn]) IS_IGNORE_EXISTING=--ignore-existing ;;
   esac
@@ -29,35 +33,53 @@ else
   echo ">${DESTINATION_PATH}: directory with such name not found. Creating..."
 fi
 
+LOG_TEXT="<START OF TRANSACTION**********************************************************************
+Datetime=$(date);User=$USER;Action=Copy;Source=$SOURCE_PATH;Destination=$DESTINATION_PATH
+Description=$USER have initiated copying of $COUNT file(s) to the $DESTINATION_PATH \n"
+
+echo "$LOG_TEXT" >> "$LOG_PATH"
 rclone copy -v "$SOURCE_PATH" "$DESTINATION_PATH" \
   $IS_IGNORE_EXISTING --transfers $COUNT --checkers $COUNT \
   --azureblob-disable-checksum --stats 10s --stats-file-name-length 0 \
   --contimeout 60s --timeout 300s --retries 3 --low-level-retries 10 \
   --azureblob-memory-pool-flush-time 60s --azureblob-upload-concurrency 127 \
   --azureblob-chunk-size 32M --azureblob-memory-pool-use-mmap \
-  --error-on-no-transfer
+  --error-on-no-transfer --log-file $TEMP_LOG_FILE -P
 
 EXIT_CODE=$?
-echo "Exit code: $EXIT_CODE"
 
 if [ $EXIT_CODE -eq 0 ]; then
-  echo "Operation successful"
+  EXIT_DESCRIPTION="Successfully $(grep -P '(Transferred:).*[[:digit:]](?=,)' $TEMP_LOG_FILE)"
 elif [ $EXIT_CODE -eq 1 ]; then
-  echo "Syntax or usage error"
+  EXIT_DESCRIPTION="Syntax or usage error"
 elif [ $EXIT_CODE -eq 2 ]; then
-  echo "Error not otherwise categorised"
+  EXIT_DESCRIPTION="Error not otherwise categorised"
 elif [ $EXIT_CODE -eq 3 ]; then
-  echo "Directory not found"
+  EXIT_DESCRIPTION="Directory not found"
 elif [ $EXIT_CODE -eq 4 ]; then
-  echo "File not found"
+  EXIT_DESCRIPTION="File not found"
 elif [ $EXIT_CODE -eq 5 ]; then
-  echo "Temporary error (one that more retries might fix) (Retry errors)"
+  EXIT_DESCRIPTION="Temporary error (one that more retries might fix) (Retry errors)"
 elif [ $EXIT_CODE -eq 6 ]; then
-  echo "Less serious errors (NoRetry errors)"
+  EXIT_DESCRIPTION="Less serious errors (NoRetry errors)"
 elif [ $EXIT_CODE -eq 7 ]; then
-  echo "Fatal error (one that more retries won't fix, like account suspended)"
+  EXIT_DESCRIPTION="Fatal error (one that more retries won't fix, like account suspended)"
 elif [ $EXIT_CODE -eq 8 ]; then
-  echo "Transfer exceeded - limit set by --max-transfer reached"
+  EXIT_DESCRIPTION="Transfer exceeded specified limit"
 elif [ $EXIT_CODE -eq 9 ]; then
-  echo "Operation successful, but no files transferred"
+  EXIT_DESCRIPTION="Operation successful, but no files transferred (files in the source and destination are similar)"
+elif [ $EXIT_CODE -eq 137 ]; then
+  EXIT_DESCRIPTION="Out of memory"
+else
+  EXIT_DESCRIPTION="Unknown code. Please check result manually"
 fi
+
+echo "Exit code: $EXIT_CODE"
+echo "$EXIT_DESCRIPTION"
+
+LOG_TEXT="Datetime=$(date);User=$USER;Action=Copy;Source=$SOURCE_PATH;Destination=$DESTINATION_PATH
+Description=$EXIT_DESCRIPTION
+************************************************************************END OF TRANSACTION> \n"
+echo "$LOG_TEXT" >> "$LOG_PATH"
+
+rm $TEMP_LOG_FILE
