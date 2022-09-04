@@ -42,7 +42,7 @@ rclone copy -v "$SOURCE_PATH" "$DESTINATION_PATH" \
   $IS_IGNORE_EXISTING --transfers $COUNT --checkers $COUNT \
   --azureblob-disable-checksum --stats 10s --stats-file-name-length 0 \
   --contimeout 60s --timeout 300s --retries 3 --low-level-retries 10 \
-  --azureblob-memory-pool-flush-time 60s --azureblob-upload-concurrency 127 \
+  --azureblob-memory-pool-flush-time 60s --azureblob-upload-concurrency 128 \
   --azureblob-chunk-size 32M --azureblob-memory-pool-use-mmap \
   --error-on-no-transfer --log-file $TEMP_LOG_FILE -P
 
@@ -79,7 +79,7 @@ echo "$EXIT_DESCRIPTION"
 
 LOG_TEXT="Datetime=$(date);User=$USER;Action=Copy;Source=$SOURCE_PATH;Destination=$DESTINATION_PATH
 Description=$EXIT_DESCRIPTION
-************************************************************************END OF TRANSACTION> \n"
+************************************************************************END OF TRANSACTION> \n\n"
 echo "$LOG_TEXT" >> "$LOG_PATH"
 
 rm $TEMP_LOG_FILE
