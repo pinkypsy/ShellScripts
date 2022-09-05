@@ -1,1 +1,1 @@
-rclone copy /var/log/rclone/ --include=*.gz  assetsstorage2908:/containerrrr --azureblob-access-tier archive --ignore-existing
+rclone copy "$(pwd)"/log/rclone/ --include=*.gz  "$ARCHIVE_STORAGE":/archive --azureblob-access-tier archive --ignore-existing
