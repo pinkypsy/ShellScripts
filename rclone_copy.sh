@@ -1,8 +1,10 @@
 #!/bin/bash
 
-LOG_PATH="/log/rclone"
+LOG_PATH="$(pwd)/log/rclone"
 LOG_FILE="$LOG_PATH/access.log"
-mkdir -p $LOG_PATH && touch $LOG_FILE
+mkdir -p "$LOG_PATH" && touch "$LOG_FILE"
+
+NEWLINE_CHAR=$'\n'
 
 TEMP_LOG_FILE="temp_rclone.log"
 
@@ -24,7 +26,7 @@ echo ">Number of files to copy: $COUNT"
 if [ -z "$DESTINATION_PATH" ]; then
   read -r -p "Enter destination path (pattern: STORAGE_ACCOUNT_NAME:/CONTAINER_NAME/destination/path): " DESTINATION_PATH
 fi
-echo ">Destination: $DESTINATION_PATH"
+echo ">Destination: $DESTINATION_PATH content"
 
 rclone lsl "$DESTINATION_PATH" --error-on-no-transfer
 if [ $? -ne 3 ]; then
@@ -37,8 +39,8 @@ else
 fi
 
 LOG_TEXT="<START OF TRANSACTION**********************************************************************
-Datetime=$(date);User=$USER;Action=Copy;Source=$SOURCE_PATH;Destination=$DESTINATION_PATH
-Description=$USER have initiated copying of $COUNT file(s) to the $DESTINATION_PATH \n"
+Datetime=$(date);User=$(whoami);Action=COPY;Source=$SOURCE_PATH;Destination=$DESTINATION_PATH
+Description=$USER have initiated copying of $COUNT file(s) to the $DESTINATION_PATH $NEWLINE_CHAR"
 
 echo "$LOG_TEXT" >> "$LOG_FILE"
 
@@ -80,9 +82,9 @@ fi
 echo "Exit code: $EXIT_CODE"
 echo "$EXIT_DESCRIPTION"
 
-LOG_TEXT="Datetime=$(date);User=$USER;Action=Copy;Source=$SOURCE_PATH;Destination=$DESTINATION_PATH
+LOG_TEXT="Datetime=$(date);User=$(whoami);Action=COPY;Source=$SOURCE_PATH;Destination=$DESTINATION_PATH
 Description=$EXIT_DESCRIPTION
-************************************************************************END OF TRANSACTION> \n\n"
+************************************************************************END OF TRANSACTION> $NEWLINE_CHAR $NEWLINE_CHAR"
 echo "$LOG_TEXT" >> "$LOG_FILE"
 
 rm $TEMP_LOG_FILE

@@ -32,8 +32,7 @@ Log rotation checkup will run every day at 4:00. Note: this cronjob should run a
 
 ## <center> Log Backup
 
-To automate the log backup process use script `archive_logs.sh` (don't forget to specify a storage account and container for the archive) with the following content:<br>
-`rclone copy "$(pwd)"/log/rclone/ --include=*.gz  $STORAGE:/$ARCHIVE_CONTAINER --azureblob-access-tier archive --ignore-existing`
+To automate the log backup process use script `archive_logs.sh` (don't forget to specify a storage account and container for the archive).
 
 This script will force the rclone to copy log archives to the remote storage account with the archive access tier.
 
@@ -42,6 +41,7 @@ To automatically execute this script place the following line to the `/etc/cront
 `01 4 * * * username  /bin/bash  ~/archive_logs.sh`
 
 This cronjob will force `/archive_logs.sh` script execution daily at 4:01.
+<br>
 <br>
 
 **N.B. Options above may vary, and we’ll know the exact values after Truven-machine allocation and the use-case statistic collection.**
