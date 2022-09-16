@@ -17,6 +17,9 @@ echo "$LOG_TEXT" >>"$LOG_FILE"
 rclone copy -v $LOG_PATH --include=*.gz $DESTINATION --azureblob-access-tier archive \
   --ignore-existing --error-on-no-transfer --log-file $TEMP_LOG_FILE
 
+LIST_OF_COPIED_ITEMS=$(grep -P '(INFO  : ).*(: Copied)' $TEMP_LOG_FILE)
+echo "$LIST_OF_COPIED_ITEMS $NEWLINE_CHAR" >> "$LOG_FILE"
+
 EXIT_CODE=$?
 
 if [ $EXIT_CODE -eq 0 ]; then

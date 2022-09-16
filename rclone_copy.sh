@@ -51,6 +51,9 @@ rclone copy -v "$SOURCE_PATH" "$DESTINATION_PATH" \
   --azureblob-chunk-size 32M --azureblob-memory-pool-use-mmap \
   --error-on-no-transfer --log-file $TEMP_LOG_FILE -P
 
+LIST_OF_COPIED_ITEMS=$(grep -P '(INFO  : ).*(: Copied)' $TEMP_LOG_FILE)
+echo "$LIST_OF_COPIED_ITEMS $NEWLINE_CHAR" >> "$LOG_FILE"
+
 EXIT_CODE=$?
 
 if [ $EXIT_CODE -eq 0 ]; then
